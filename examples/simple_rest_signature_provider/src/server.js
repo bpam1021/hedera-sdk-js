@@ -79,20 +79,25 @@ app.post("/request", async function (req, res) {
         const response = await wallet.call(transaction);
         res.json(response);
         return;
-    } catch (_) {
-        try {
-            const query = Query.fromBytes(bytes);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const response = await wallet.call(query);
-            res.json({
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument
-                response: Buffer.from(response.toBytes()).toString("hex"),
-            });
-            return;
-        } catch (error) {
+    } catch (error) {
+        if (/** @type {Error} */ (error).name === "StatusError") {
             res.json({ error: /** @type {Error} */ (error).toString() });
             return;
         }
+    }
+
+    try {
+        const query = Query.fromBytes(bytes);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const response = await wallet.call(query);
+        res.json({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument
+            response: Buffer.from(response.toBytes()).toString("hex"),
+        });
+        return;
+    } catch (error) {
+        res.json({ error: /** @type {Error} */ (error).toString() });
+        return;
     }
 });
 

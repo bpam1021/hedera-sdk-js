@@ -126,6 +126,13 @@ export class SimpleRestProvider {
     }
 
     /**
+     * @typedef {object} StatusErrorJSON
+     * @property {string} status
+     * @property {string} transactionId
+     * @property {string} message
+     */
+
+    /**
      * @template RequestT
      * @template ResponseT
      * @template OutputT
@@ -133,7 +140,7 @@ export class SimpleRestProvider {
      * @returns {Promise<OutputT>}
      */
     async call(request) {
-        /** @type {{ response: string, error: string | undefined} | TransactionResponseJSON} */
+        /** @type {{ response: string, error: StatusErrorJSON | string | undefined} | TransactionResponseJSON} */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const response = (
             await instance.post("/request", {
@@ -142,7 +149,8 @@ export class SimpleRestProvider {
         ).data;
 
         if (Object.prototype.hasOwnProperty.call(response, "error")) {
-            throw new Error(/** @type {{ error: string }} */ (response).error);
+            throw /** @type {{ error: StatusErrorJSON | string}} */ (response)
+                .error;
         }
 
         if (Object.prototype.hasOwnProperty.call(response, "response")) {
